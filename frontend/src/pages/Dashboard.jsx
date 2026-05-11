@@ -11,6 +11,10 @@ function Dashboard() {
 
   const [files, setFiles] = useState([]);
 
+  const [folders, setFolders] = useState([]);
+
+  const [folderName, setFolderName] = useState("");
+
   const [uploading, setUploading] = useState(false);
 
   const [progress, setProgress] = useState(0);
@@ -40,9 +44,29 @@ function Dashboard() {
 
   };
 
+  const fetchFolders = async () => {
+
+    try {
+
+      const response = await api.get(
+        "/folders"
+      );
+
+      setFolders(response.data.folders);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
   useEffect(() => {
 
     fetchFiles();
+
+    fetchFolders();
 
   }, []);
 
@@ -159,6 +183,33 @@ function Dashboard() {
 
   };
 
+
+  const handleCreateFolder = async () => {
+
+    if (!folderName.trim()) return;
+
+    try {
+
+      await api.post(
+        "/folders",
+        {
+          name: folderName
+        }
+      );
+
+      setFolderName("");
+
+      fetchFolders();
+
+    } catch (error) {
+
+      alert("Error creando carpeta");
+
+    }
+
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors p-8">
 
@@ -192,6 +243,63 @@ function Dashboard() {
 
         </div>
 
+
+        {/* CREAR CARPETA */}
+        <div
+          className="
+    bg-white
+    dark:bg-gray-800
+    p-6
+    rounded-2xl
+    shadow
+    mb-8
+  "
+        >
+
+          <h2 className="text-xl font-bold dark:text-white mb-4">
+            Crear carpeta 📁
+          </h2>
+
+          <div className="flex gap-4">
+
+            <input
+              type="text"
+              placeholder="Nombre carpeta"
+              value={folderName}
+              onChange={(e) =>
+                setFolderName(e.target.value)
+              }
+              className="
+        flex-1
+        border
+        rounded-lg
+        px-4
+        py-2
+        dark:bg-gray-700
+        dark:text-white
+      "
+            />
+
+            <button
+              onClick={handleCreateFolder}
+              className="
+        bg-black
+        dark:bg-white
+        dark:text-black
+        text-white
+        px-6
+        py-2
+        rounded-lg
+      "
+            >
+              Crear
+            </button>
+
+          </div>
+
+        </div>
+
+
         {/* DROPZONE */}
         <div
           {...getRootProps()}
@@ -223,6 +331,44 @@ function Dashboard() {
           <p className="text-gray-500 dark:text-gray-300 mt-2">
             o haz click para seleccionar
           </p>
+
+        </div>
+
+
+        {/* CARPETAS */}
+        <div className="mb-8">
+
+          <h2 className="text-2xl font-bold dark:text-white mb-4">
+            Carpetas 📁
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-4">
+
+            {
+              folders.map((folder) => (
+
+                <div
+                  key={folder._id}
+                  className="
+            bg-white
+            dark:bg-gray-800
+            dark:text-white
+            rounded-2xl
+            shadow
+            p-6
+          "
+                >
+
+                  <h3 className="text-lg font-bold">
+                    📁 {folder.name}
+                  </h3>
+
+                </div>
+
+              ))
+            }
+
+          </div>
 
         </div>
 
