@@ -17,6 +17,10 @@ function Dashboard() {
 
   const [preview, setPreview] = useState(null);
 
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
+
   // Obtener archivos
   const fetchFiles = async () => {
 
@@ -41,6 +45,29 @@ function Dashboard() {
     fetchFiles();
 
   }, []);
+
+  // Toggle Dark Mode
+  const toggleDarkMode = () => {
+
+    const html = document.documentElement;
+
+    if (darkMode) {
+
+      html.classList.remove("dark");
+
+      localStorage.setItem("theme", "light");
+
+    } else {
+
+      html.classList.add("dark");
+
+      localStorage.setItem("theme", "dark");
+
+    }
+
+    setDarkMode(!darkMode);
+
+  };
 
   // Upload
   const onDrop = async (acceptedFiles) => {
@@ -108,12 +135,14 @@ function Dashboard() {
   };
 
   // Dropzone
-  const { getRootProps, getInputProps } =
-    useDropzone({
-      onDrop
-    });
+  const {
+    getRootProps,
+    getInputProps
+  } = useDropzone({
+    onDrop
+  });
 
-  // Eliminar
+  // Eliminar archivo
   const handleDelete = async (id) => {
 
     try {
@@ -131,26 +160,58 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors p-8">
 
       <div className="max-w-6xl mx-auto">
 
-        <div className="mb-8">
+        {/* HEADER */}
+        <div className="mb-8 flex justify-between items-center">
 
-          <h1 className="text-4xl font-bold mb-2">
-            Dashboard ☁️
-          </h1>
+          <div>
 
-          <p className="text-gray-500">
-            Tus backups cloud
-          </p>
+            <h1 className="text-4xl font-bold dark:text-white mb-2">
+              Dashboard ☁️
+            </h1>
+
+            <p className="text-gray-500 dark:text-gray-300">
+              Tus backups cloud
+            </p>
+
+          </div>
+
+          <button
+            onClick={toggleDarkMode}
+            className="bg-black dark:bg-white dark:text-black text-white px-4 py-2 rounded-lg"
+          >
+            {
+              darkMode
+                ? "Modo Claro ☀️"
+                : "Modo Oscuro 🌙"
+            }
+          </button>
 
         </div>
 
         {/* DROPZONE */}
         <div
           {...getRootProps()}
-          className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-black transition mb-8"
+          className="
+            bg-white
+            dark:bg-gray-800
+            dark:text-white
+            border-2
+            border-dashed
+            border-gray-300
+            dark:border-gray-600
+            rounded-2xl
+            p-12
+            text-center
+            cursor-pointer
+            hover:border-black
+            dark:hover:border-white
+            transition
+            mb-8
+          "
         >
 
           <input {...getInputProps()} />
@@ -159,7 +220,7 @@ function Dashboard() {
             Arrastra archivos aquí
           </p>
 
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-500 dark:text-gray-300 mt-2">
             o haz click para seleccionar
           </p>
 
@@ -171,7 +232,7 @@ function Dashboard() {
 
             <div className="mb-8">
 
-              <h2 className="font-bold mb-4">
+              <h2 className="font-bold dark:text-white mb-4">
                 Preview
               </h2>
 
@@ -186,16 +247,16 @@ function Dashboard() {
           )
         }
 
-        {/* PROGRESS */}
+        {/* PROGRESS BAR */}
         {
           uploading && (
 
             <div className="mb-8">
 
-              <div className="w-full bg-gray-300 rounded-full h-5">
+              <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-5">
 
                 <div
-                  className="bg-black h-5 rounded-full transition-all"
+                  className="bg-black dark:bg-white h-5 rounded-full transition-all"
                   style={{
                     width: `${progress}%`
                   }}
@@ -203,7 +264,7 @@ function Dashboard() {
 
               </div>
 
-              <p className="mt-2 text-sm">
+              <p className="mt-2 text-sm dark:text-white">
                 Subiendo... {progress}%
               </p>
 
@@ -220,7 +281,17 @@ function Dashboard() {
 
               <div
                 key={file._id}
-                className="bg-white rounded-2xl shadow p-6 flex justify-between items-center"
+                className="
+                  bg-white
+                  dark:bg-gray-800
+                  dark:text-white
+                  rounded-2xl
+                  shadow
+                  p-6
+                  flex
+                  justify-between
+                  items-center
+                "
               >
 
                 <div>
@@ -232,6 +303,7 @@ function Dashboard() {
                   <a
                     href={file.fileUrl}
                     target="_blank"
+                    rel="noreferrer"
                     className="text-blue-500 text-sm"
                   >
                     Ver archivo
