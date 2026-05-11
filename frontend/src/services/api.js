@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: "https://backup-cloud.onrender.com/api"
 });
 
-// Interceptor JWT
 api.interceptors.request.use((config) => {
 
   const token = localStorage.getItem("token");
