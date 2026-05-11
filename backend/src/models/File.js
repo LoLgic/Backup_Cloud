@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const fileSchema = new mongoose.Schema(
   {
+    folder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Folder",
+      default: null
+    },
+    
     fileName: {
       type: String,
       required: true
