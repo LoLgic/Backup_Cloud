@@ -1,6 +1,49 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import api from "../services/api";
 
 function Register() {
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: ""
+  });
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+
+  };
+
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+
+    try {
+
+      await api.post("/auth/register", formData);
+
+      alert("Usuario registrado correctamente");
+
+      navigate("/");
+
+    } catch (error) {
+
+      alert(
+        error.response?.data?.message ||
+        "Error registrando usuario"
+      );
+
+    }
+
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -15,23 +58,32 @@ function Register() {
           Regístrate en la plataforma
         </p>
 
-        <form className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
 
           <input
             type="text"
+            name="username"
             placeholder="Nombre"
+            onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg p-3"
           />
 
           <input
             type="email"
+            name="email"
             placeholder="Correo electrónico"
+            onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg p-3"
           />
 
           <input
             type="password"
+            name="password"
             placeholder="Contraseña"
+            onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg p-3"
           />
 
