@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://backup-cloud.onrender.com"
+  baseURL: "https://backup-cloud.onrender.com/api"
 });
 
 // Interceptor JWT
