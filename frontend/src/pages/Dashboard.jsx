@@ -1,18 +1,21 @@
 import {
   useEffect,
-  useRef,
   useState
 } from "react";
+
+import { useDropzone } from "react-dropzone";
 
 import api from "../services/api";
 
 function Dashboard() {
 
-  const fileInputRef = useRef();
-
   const [files, setFiles] = useState([]);
 
-  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const [progress, setProgress] = useState(0);
+
+  const [preview, setPreview] = useState(null);
 
   // Obtener archivos
   const fetchFiles = async () => {
@@ -40,15 +43,30 @@ function Dashboard() {
   }, []);
 
   // Upload
-  const handleUpload = async (event) => {
+  const onDrop = async (acceptedFiles) => {
 
-    const file = event.target.files[0];
+    const file = acceptedFiles[0];
 
     if (!file) return;
 
+    // Preview imágenes
+    if (file.type.startsWith("image")) {
+
+      setPreview(
+        URL.createObjectURL(file)
+      );
+
+    } else {
+
+      setPreview(null);
+
+    }
+
     try {
 
-      setLoading(true);
+      setUploading(true);
+
+      setProgress(0);
 
       const formData = new FormData();
 
@@ -56,7 +74,21 @@ function Dashboard() {
 
       await api.post(
         "/files/upload",
-        formData
+        formData,
+        {
+
+          onUploadProgress: (progressEvent) => {
+
+            const percent = Math.round(
+              (progressEvent.loaded * 100)
+              / progressEvent.total
+            );
+
+            setProgress(percent);
+
+          }
+
+        }
       );
 
       alert("Archivo subido correctamente");
@@ -65,18 +97,21 @@ function Dashboard() {
 
     } catch (error) {
 
-      alert(
-        error.response?.data?.message ||
-        "Error subiendo archivo"
-      );
+      alert("Error subiendo archivo");
 
     } finally {
 
-      setLoading(false);
+      setUploading(false);
 
     }
 
   };
+
+  // Dropzone
+  const { getRootProps, getInputProps } =
+    useDropzone({
+      onDrop
+    });
 
   // Eliminar
   const handleDelete = async (id) => {
@@ -84,8 +119,6 @@ function Dashboard() {
     try {
 
       await api.delete(`/files/${id}`);
-
-      alert("Archivo eliminado");
 
       fetchFiles();
 
@@ -102,44 +135,84 @@ function Dashboard() {
 
       <div className="max-w-6xl mx-auto">
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8">
 
-          <div>
+          <h1 className="text-4xl font-bold mb-2">
+            Dashboard ☁️
+          </h1>
 
-            <h1 className="text-4xl font-bold">
-              Dashboard ☁️
-            </h1>
-
-            <p className="text-gray-500">
-              Tus backups cloud
-            </p>
-
-          </div>
-
-          <div>
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleUpload}
-              hidden
-            />
-
-            <button
-              onClick={() => fileInputRef.current.click()}
-              className="bg-black text-white px-5 py-3 rounded-lg"
-            >
-              {
-                loading
-                  ? "Subiendo..."
-                  : "Subir Archivo"
-              }
-            </button>
-
-          </div>
+          <p className="text-gray-500">
+            Tus backups cloud
+          </p>
 
         </div>
 
+        {/* DROPZONE */}
+        <div
+          {...getRootProps()}
+          className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-black transition mb-8"
+        >
+
+          <input {...getInputProps()} />
+
+          <p className="text-lg font-semibold">
+            Arrastra archivos aquí
+          </p>
+
+          <p className="text-gray-500 mt-2">
+            o haz click para seleccionar
+          </p>
+
+        </div>
+
+        {/* PREVIEW */}
+        {
+          preview && (
+
+            <div className="mb-8">
+
+              <h2 className="font-bold mb-4">
+                Preview
+              </h2>
+
+              <img
+                src={preview}
+                alt="preview"
+                className="w-64 rounded-2xl shadow"
+              />
+
+            </div>
+
+          )
+        }
+
+        {/* PROGRESS */}
+        {
+          uploading && (
+
+            <div className="mb-8">
+
+              <div className="w-full bg-gray-300 rounded-full h-5">
+
+                <div
+                  className="bg-black h-5 rounded-full transition-all"
+                  style={{
+                    width: `${progress}%`
+                  }}
+                />
+
+              </div>
+
+              <p className="mt-2 text-sm">
+                Subiendo... {progress}%
+              </p>
+
+            </div>
+
+          )
+        }
+
+        {/* ARCHIVOS */}
         <div className="grid gap-4">
 
           {
