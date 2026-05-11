@@ -4,7 +4,7 @@ import upload from "../middleware/uploadMiddleware.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 
-import { uploadFile, getUserFiles, deleteFile } from "../controllers/fileController.js";
+import { uploadFile, getMyFiles, deleteFile } from "../controllers/fileController.js";
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post(
 router.get(
   "/my-files",
   authMiddleware,
-  getUserFiles
+  getMyFiles
 );
 
 router.delete(

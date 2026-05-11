@@ -15,6 +15,8 @@ function Dashboard() {
 
   const [folderName, setFolderName] = useState("");
 
+  const [currentFolder, setCurrentFolder] = useState(null);
+
   const [uploading, setUploading] = useState(false);
 
   const [progress, setProgress] = useState(0);
@@ -26,12 +28,17 @@ function Dashboard() {
   );
 
   // Obtener archivos
-  const fetchFiles = async () => {
+  const fetchFiles = async (folderId = null) => {
 
     try {
 
       const response = await api.get(
-        "/files/my-files"
+        "/files/my-files",
+        {
+          params: {
+            folderId
+          }
+        }
       );
 
       setFiles(response.data.files);
@@ -64,11 +71,11 @@ function Dashboard() {
 
   useEffect(() => {
 
-    fetchFiles();
+    fetchFiles(currentFolder);
 
     fetchFolders();
 
-  }, []);
+  }, [currentFolder]);
 
   // Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -123,6 +130,15 @@ function Dashboard() {
 
       formData.append("file", file);
 
+      if (currentFolder) {
+
+        formData.append(
+          "folderId",
+          currentFolder
+        );
+
+      }
+
       await api.post(
         "/files/upload",
         formData,
@@ -144,7 +160,9 @@ function Dashboard() {
 
       alert("Archivo subido correctamente");
 
-      fetchFiles();
+      setPreview(null);
+
+      fetchFiles(currentFolder);
 
     } catch (error) {
 
@@ -173,7 +191,7 @@ function Dashboard() {
 
       await api.delete(`/files/${id}`);
 
-      fetchFiles();
+      fetchFiles(currentFolder);
 
     } catch (error) {
 
@@ -242,6 +260,34 @@ function Dashboard() {
           </button>
 
         </div>
+
+
+        {
+          currentFolder && (
+
+            <div className="mb-6">
+
+              <button
+                onClick={() => {
+                  setCurrentFolder(null);
+
+                  setPreview(null);
+                }}
+                className="
+          bg-gray-700
+          text-white
+          px-4
+          py-2
+          rounded-lg
+        "
+              >
+                ← Volver
+              </button>
+
+            </div>
+
+          )
+        }
 
 
         {/* CREAR CARPETA */}
@@ -336,41 +382,55 @@ function Dashboard() {
 
 
         {/* CARPETAS */}
-        <div className="mb-8">
+        {
+          !currentFolder && (
 
-          <h2 className="text-2xl font-bold dark:text-white mb-4">
-            Carpetas 📁
-          </h2>
+            <div className="mb-8">
 
-          <div className="grid md:grid-cols-3 gap-4">
+              <h2 className="text-2xl font-bold dark:text-white mb-4">
+                Carpetas 📁
+              </h2>
 
-            {
-              folders.map((folder) => (
+              <div className="grid md:grid-cols-3 gap-4">
 
-                <div
-                  key={folder._id}
-                  className="
-            bg-white
-            dark:bg-gray-800
-            dark:text-white
-            rounded-2xl
-            shadow
-            p-6
-          "
-                >
+                {
+                  folders.map((folder) => (
 
-                  <h3 className="text-lg font-bold">
-                    📁 {folder.name}
-                  </h3>
+                    <div
+                      key={folder._id}
+                      onClick={() => {
+                        setCurrentFolder(folder._id);
 
-                </div>
+                        setPreview(null);
+                      }}
+                      className="
+                bg-white
+                dark:bg-gray-800
+                dark:text-white
+                rounded-2xl
+                shadow
+                p-6
+                cursor-pointer
+                hover:scale-105
+                transition
+              "
+                    >
 
-              ))
-            }
+                      <h3 className="text-lg font-bold">
+                        📁 {folder.name}
+                      </h3>
 
-          </div>
+                    </div>
 
-        </div>
+                  ))
+                }
+
+              </div>
+
+            </div>
+
+          )
+        }
 
         {/* PREVIEW */}
         {
