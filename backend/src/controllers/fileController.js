@@ -23,7 +23,8 @@ export const uploadFile = async (req, res) => {
     const newFile = await File.create({
       fileName: req.file.originalname,
       fileUrl: result.secure_url,
-      publicId: result.public_id
+      publicId: result.public_id,
+      uploadedBy: req.user.id
     });
 
     res.status(201).json({
@@ -35,6 +36,66 @@ export const uploadFile = async (req, res) => {
 
     res.status(500).json({
       message: "Error subiendo archivo",
+      error: error.message
+    });
+
+  }
+};
+
+export const getUserFiles = async (req, res) => {
+  try {
+
+    const files = await File.find({
+      uploadedBy: req.user.id
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      total: files.length,
+      files
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Error obteniendo archivos",
+      error: error.message
+    });
+
+  }
+};
+
+export const deleteFile = async (req, res) => {
+  try {
+
+    const file = await File.findById(req.params.id);
+
+    if (!file) {
+      return res.status(404).json({
+        message: "Archivo no encontrado"
+      });
+    }
+
+    // Verificar propietario
+    if (file.uploadedBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "No autorizado"
+      });
+    }
+
+    // Eliminar de Cloudinary
+    await cloudinary.uploader.destroy(file.publicId);
+
+    // Eliminar de MongoDB
+    await file.deleteOne();
+
+    res.status(200).json({
+      message: "Archivo eliminado correctamente"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Error eliminando archivo",
       error: error.message
     });
 
