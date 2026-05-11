@@ -1,0 +1,33 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+import authRoutes from "./routes/authRoutes.js";
+import connectDB from "./config/db.js";
+import fileRoutes from "./routes/fileRoutes.js";
+
+dotenv.config();
+
+connectDB();
+
+const app = express();
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+app.use("/api/files", fileRoutes);
+
+// Ruta de prueba
+app.get("/", (req, res) => {
+  res.json({
+    message: "API Backup Cloud funcionando 🚀"
+  });
+});
+
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
