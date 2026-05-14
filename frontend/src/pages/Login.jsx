@@ -38,6 +38,11 @@ function Login() {
         response.data.token
       );
 
+      localStorage.setItem(
+        "role",
+        response.data.user.role
+      );
+
       alert("Login exitoso");
 
       navigate("/dashboard");

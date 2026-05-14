@@ -27,7 +27,17 @@ const fileSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Folder",
     default: null
-  }
+  },
+
+  isPublic: {
+    type: Boolean,
+    default: false
+  },
+
+  shareToken: {
+    type: String,
+    default: null
+  },
 
 }, {
   timestamps: true

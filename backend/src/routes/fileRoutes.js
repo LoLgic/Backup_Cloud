@@ -4,7 +4,9 @@ import upload from "../middleware/uploadMiddleware.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 
-import { uploadFile, getMyFiles, deleteFile } from "../controllers/fileController.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
+
+import { uploadFile, getMyFiles, deleteFile, shareFile, getPublicFile, getAllFiles } from "../controllers/fileController.js";
 
 const router = express.Router();
 
@@ -25,6 +27,24 @@ router.delete(
   "/:id",
   authMiddleware,
   deleteFile
+);
+
+router.put(
+  "/share/:id",
+  authMiddleware,
+  shareFile
+);
+
+router.get(
+  "/public/:token",
+  getPublicFile
+);
+
+router.get(
+  "/admin/all-files",
+  authMiddleware,
+  adminMiddleware,
+  getAllFiles
 );
 
 export default router;

@@ -1,5 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import File from "../models/File.js";
+import { v4 as uuidv4 } from "uuid";
 
 import mongoose from "mongoose";
 
@@ -159,4 +160,141 @@ export const deleteFile = async (req, res) => {
     });
 
   }
+};
+
+export const shareFile = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const file = await File.findById(
+      req.params.id
+    );
+
+    if (!file) {
+
+      return res.status(404).json({
+        message: "Archivo no encontrado"
+      });
+
+    }
+
+    // Verificar propietario
+    if (
+      file.user.toString() !== req.user.id
+    ) {
+
+      return res.status(403).json({
+        message: "No autorizado"
+      });
+
+    }
+
+    // Generar token único
+    file.isPublic = true;
+
+    file.shareToken = uuidv4();
+
+    await file.save();
+
+    res.json({
+
+      message: "Archivo compartido",
+
+      link:
+        `${process.env.FRONTEND_URL}/share/${file.shareToken}`
+
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      message: "Error compartiendo archivo",
+
+      error: error.message
+
+    });
+
+  }
+
+};
+
+export const getPublicFile = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const file = await File.findOne({
+
+      shareToken: req.params.token,
+
+      isPublic: true
+
+    });
+
+    if (!file) {
+
+      return res.status(404).json({
+
+        message: "Archivo no encontrado"
+
+      });
+
+    }
+
+    res.json({
+
+      file
+
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      message: "Error obteniendo archivo",
+
+      error: error.message
+
+    });
+
+  }
+
+};
+
+export const getAllFiles = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const files = await File.find()
+      .populate("user", "email role");
+
+    res.json({
+
+      total: files.length,
+
+      files
+
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      message: "Error obteniendo archivos",
+
+      error: error.message
+
+    });
+
+  }
+
 };

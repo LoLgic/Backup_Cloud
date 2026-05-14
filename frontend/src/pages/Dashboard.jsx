@@ -13,6 +13,8 @@ function Dashboard() {
 
   const [folders, setFolders] = useState([]);
 
+  const [adminFiles, setAdminFiles] = useState([]);
+
   const [folderName, setFolderName] = useState("");
 
   const [currentFolder, setCurrentFolder] = useState(null);
@@ -25,6 +27,10 @@ function Dashboard() {
 
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("theme") === "dark"
+  );
+
+  const [isAdmin] = useState(
+    localStorage.getItem("role") === "admin"
   );
 
   // Obtener archivos
@@ -69,11 +75,37 @@ function Dashboard() {
 
   };
 
+  const fetchAdminFiles = async () => {
+
+    try {
+
+      const response = await api.get(
+        "/files/admin/all-files"
+      );
+
+      setAdminFiles(
+        response.data.files
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
   useEffect(() => {
 
     fetchFiles(currentFolder);
 
     fetchFolders();
+
+    if (isAdmin) {
+
+      fetchAdminFiles();
+
+    }
 
   }, [currentFolder]);
 
@@ -222,6 +254,30 @@ function Dashboard() {
     } catch (error) {
 
       alert("Error creando carpeta");
+
+    }
+
+  };
+
+  const handleShare = async (id) => {
+
+    try {
+
+      const response = await api.put(
+        `/files/share/${id}`
+      );
+
+      navigator.clipboard.writeText(
+        response.data.link
+      );
+
+      alert(
+        "Link copiado al portapapeles 🚀"
+      );
+
+    } catch (error) {
+
+      alert("Error compartiendo");
 
     }
 
@@ -483,6 +539,52 @@ function Dashboard() {
         <div className="grid gap-4">
 
           {
+            isAdmin && (
+
+              <div className="mb-8">
+
+                <h2 className="text-2xl font-bold dark:text-white mb-4">
+                  Panel Admin 👑
+                </h2>
+
+                <div className="grid gap-4">
+
+                  {
+                    adminFiles.map((file) => (
+
+                      <div
+                        key={file._id}
+                        className="
+                bg-yellow-100
+                dark:bg-yellow-900
+                p-4
+                rounded-xl
+              "
+                      >
+
+                        <p className="font-bold">
+                          {file.fileName}
+                        </p>
+
+                        <p className="text-sm">
+                          Usuario:
+                          {" "}
+                          {file.user?.email}
+                        </p>
+
+                      </div>
+
+                    ))
+                  }
+
+                </div>
+
+              </div>
+
+            )
+          }
+
+          {
             files.map((file) => (
 
               <div
@@ -510,9 +612,29 @@ function Dashboard() {
                     href={file.fileUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-500 text-sm"
+                    className="bg-green-500
+                      text-white
+                      px-4
+                      py-2
+                      rounded-lg
+                      text-sm"
                   >
                     Ver archivo
+                  </a>
+                  <a
+                    onClick={() =>
+                      handleShare(file._id)
+                    }
+                    className="
+                        bg-blue-500
+                        text-white
+                        px-4
+                        py-2
+                        rounded-lg
+                        mr-2
+                      "
+                  >
+                    Compartir
                   </a>
 
                 </div>
