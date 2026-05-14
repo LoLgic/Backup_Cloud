@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
+import RefreshToken from "../models/RefreshToken.js";
+
 export const register = async (req, res) => {
   try {
 
@@ -65,20 +67,38 @@ export const login = async (req, res) => {
     }
 
     // Generar token
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
         id: user._id,
         role: user.role
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "7d"
+        expiresIn:
+          process.env.JWT_EXPIRES_IN
       }
     );
 
+    const refreshToken = jwt.sign(
+      {
+        id: user._id
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn:
+          process.env.REFRESH_TOKEN_EXPIRES
+      }
+    );
+
+    await RefreshToken.create({
+      token: refreshToken,
+      user: user._id
+    });
+
     res.status(200).json({
       message: "Login exitoso",
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         username: user.username,
