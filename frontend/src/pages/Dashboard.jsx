@@ -94,6 +94,12 @@ function Dashboard() {
     }
 
   };
+  useEffect(() => {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) { window.location.href = "/login"; }
+  }, []);
 
   useEffect(() => {
 
@@ -283,6 +289,20 @@ function Dashboard() {
 
   };
 
+  const handleLogout = () => {
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "refreshToken"
+    );
+
+    window.location.href = "/login";
+
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors p-8">
@@ -291,6 +311,19 @@ function Dashboard() {
 
         {/* HEADER */}
         <div className="mb-8 flex justify-between items-center">
+
+          <button
+            onClick={handleLogout}
+            className="
+              bg-red-500
+              text-white
+              px-4
+              py-2
+              rounded-lg
+            "
+          >
+            Cerrar sesión 🚪
+          </button>
 
           <div>
 
